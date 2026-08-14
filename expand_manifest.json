@@ -1,0 +1,30 @@
+{
+  "source": "https://huggingface.co/Gazingstars123/Anima-2.9B/blob/main/expand_manifest.json",
+  "old_block_count": 28,
+  "new_block_count": 40,
+  "insertion_positions": [2, 5, 8, 11, 14, 17, 21, 24, 27, 30, 33, 36],
+  "inserted_to_source": {
+    "2": 1,
+    "5": 3,
+    "8": 5,
+    "11": 7,
+    "14": 9,
+    "17": 11,
+    "21": 14,
+    "24": 16,
+    "27": 18,
+    "30": 20,
+    "33": 22,
+    "36": 24
+  },
+  "zeroed_suffixes": [
+    "adaln_modulation_self_attn.2.weight",
+    "adaln_modulation_cross_attn.2.weight",
+    "adaln_modulation_mlp.2.weight",
+    "self_attn.output_proj.weight",
+    "cross_attn.output_proj.weight",
+    "mlp.layer2.weight"
+  ]
+}
+
+
