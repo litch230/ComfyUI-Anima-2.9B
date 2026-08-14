@@ -259,3 +259,120 @@ class AnimaExpandedModelMergeBlocks:
             progress.update(1)
 
         return (merged,)
+
+
+class AnimaExpandedModelMergeSections:
+    """Three-section merge for the 40-block Anima 2.9B architecture."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "anima_2_9b": (
+                    "MODEL",
+                    {"tooltip": "Anima 2.9B with 40 blocks."},
+                ),
+                "anima_base": (
+                    "MODEL",
+                    {"tooltip": "Anima Base or an Anima Base fine-tune with 28 blocks."},
+                ),
+                "input": (
+                    "FLOAT",
+                    {
+                        "default": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Anima 2.9B blocks 0-12 / Anima Base blocks 0-8.",
+                    },
+                ),
+                "middle": (
+                    "FLOAT",
+                    {
+                        "default": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Anima 2.9B blocks 13-26 / Anima Base blocks 9-18.",
+                    },
+                ),
+                "out": (
+                    "FLOAT",
+                    {
+                        "default": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Anima 2.9B blocks 27-39 / Anima Base blocks 19-27.",
+                    },
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "merge"
+    CATEGORY = "model/merging/Anima"
+    DESCRIPTION = (
+        "Merges the input, middle, and output thirds of Anima Base into the "
+        "matching preserved blocks of Anima 2.9B."
+    )
+
+    @staticmethod
+    def _section_ratio(expanded_index, input_ratio, middle_ratio, out_ratio):
+        if expanded_index <= 12:
+            return input_ratio
+        if expanded_index <= 26:
+            return middle_ratio
+        return out_ratio
+
+    def merge(self, anima_2_9b, anima_base, input, middle, out):
+        expanded_patches = anima_2_9b.get_key_patches("diffusion_model.")
+        base_patches = anima_base.get_key_patches("diffusion_model.")
+
+        expanded_blocks = _block_count(expanded_patches.keys())
+        base_blocks = _block_count(base_patches.keys())
+        if expanded_blocks != NEW_BLOCK_COUNT:
+            raise ValueError(
+                f"anima_2_9b must have {NEW_BLOCK_COUNT} blocks; got {expanded_blocks}."
+            )
+        if base_blocks != OLD_BLOCK_COUNT:
+            raise ValueError(
+                f"anima_base must have {OLD_BLOCK_COUNT} blocks; got {base_blocks}."
+            )
+
+        merged = anima_2_9b.clone()
+        progress = comfy.utils.ProgressBar(len(expanded_patches))
+
+        for expanded_key, expanded_patch in expanded_patches.items():
+            comfy.model_management.throw_exception_if_processing_interrupted()
+            source_key, expanded_index, _ = _source_key(expanded_key)
+            if expanded_index is None or source_key is None or source_key not in base_patches:
+                progress.update(1)
+                continue
+
+            ratio = self._section_ratio(expanded_index, input, middle, out)
+            if ratio >= 1.0:
+                progress.update(1)
+                continue
+
+            expanded_tensor = _base_tensor(expanded_patch)
+            source_tensor = _base_tensor(base_patches[source_key])
+            if expanded_tensor.shape != source_tensor.shape:
+                logging.warning(
+                    "[Anima Section Merge] Shape mismatch: %s %s != %s %s",
+                    expanded_key,
+                    tuple(expanded_tensor.shape),
+                    source_key,
+                    tuple(source_tensor.shape),
+                )
+                progress.update(1)
+                continue
+
+            merged.add_patches(
+                {expanded_key: base_patches[source_key]},
+                1.0 - ratio,
+                ratio,
+            )
+            progress.update(1)
+
+        return (merged,)

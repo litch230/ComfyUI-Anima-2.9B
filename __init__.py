@@ -6,7 +6,13 @@ import comfy.sd
 import comfy.utils
 import folder_paths
 
-from .merge_nodes import AnimaExpandedModelMerge, AnimaExpandedModelMergeBlocks
+from .merge_nodes import (
+    AnimaExpandedModelMerge,
+    AnimaExpandedModelMergeBlocks,
+    AnimaExpandedModelMergeSections,
+)
+
+WEB_DIRECTORY = "./web"
 
 # Store the original UNet config detection function
 orig_detect_unet_config = comfy.model_detection.detect_unet_config
@@ -248,9 +254,11 @@ NODE_CLASS_MAPPINGS = {
     "Anima29BLoraLoader": Anima29BLoraLoader,
     "AnimaExpandedModelMerge": AnimaExpandedModelMerge,
     "AnimaExpandedModelMergeBlocks": AnimaExpandedModelMergeBlocks,
+    "AnimaExpandedModelMergeSections": AnimaExpandedModelMergeSections,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "Anima29BLoraLoader": "Anima 2.9B LoRA Loader",
     "AnimaExpandedModelMerge": "Anima 2.9B + Anima Base Merge",
     "AnimaExpandedModelMergeBlocks": "Anima 2.9B + Anima Base Merge Blocks",
+    "AnimaExpandedModelMergeSections": "Anima 2.9B + Anima Base Merge Sections",
 }

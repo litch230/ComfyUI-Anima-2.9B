@@ -20,8 +20,10 @@ Connect Anima 2.9B to `anima_2_9b` and Anima Base to `anima_base`. Like ComfyUI'
 `ModelMergeSimple`, `ratio` 1.0 keeps Anima 2.9B and 0.0 applies Anima Base to
 the compatible weights. The 12 blocks exclusive to Anima 2.9B remain unchanged.
 
-Connect the model output to **Save Diffusion Model** to save the result.
 
 **Anima 2.9B + Anima Base Merge Blocks** provides one ratio for each of the
 40 Anima 2.9B blocks. Only the 28 blocks that exist in Anima Base can be
 changed; the 12 exclusive Anima 2.9B blocks are shown fixed at 1.0.
+
+**Anima 2.9B + Anima Base Merge Sections** groups the compatible blocks into
+`input` (0-12), `middle` (13-26), and `out` (27-39).
